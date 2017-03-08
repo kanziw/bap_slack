@@ -10,8 +10,8 @@ export default class Now {
    */
   constructor (options = {}) {
     this.now = new Date().setTimezone(options.timezone || Timezone)
-    const formattedString = moment(this.now).format('YYYY-MM-DD HH:mm:ss')
-    const [ dateString, timeString ] = formattedString.split(' ')
+    this.formattedString = moment(this.now).format('YYYY-MM-DD HH:mm:ss')
+    const [ dateString, timeString ] = this.formattedString.split(' ')
     this._dateString = dateString
     this._timeString = timeString
   }
@@ -62,6 +62,10 @@ export default class Now {
    */
   isDinner () {
     return !this.isLunch()
+  }
+
+  valueOf () {
+    return this.now.valueOf()
   }
 }
 

@@ -1,3 +1,4 @@
+/* global debug */
 import User from './components/user'
 import Now from './components/now'
 import Menu from './components/menu'
@@ -108,7 +109,43 @@ export default class Context {
     return this.now.mealString
   }
 
+  /**
+   * 들어온 주문을 저장한다.
+   */
+  saveMenu () {
+    this.ensure(this.uid && this.tid)
+    const { orderList } = this._di
+    const key = this.orderListKey
+    if (!orderList[ key ]) {
+      orderList[ key ] = { createdAt: this.now }
+    }
+    orderList[ key ][ this.uid ] = this.args.join(' ')
+    orderList[ key ].lastCommand = new Date(0)
+  }
+
+  get orderListKey () {
+    return `${this.tid}_${this.mealKey}`
+  }
+
+  getOrderList () {
+    return this._di.orderList[ this.orderListKey ] || {}
+  }
+
+  shouldResponseCheckOrder () {
+    const orderList = this._di.orderList[ this.orderListKey ] || { lastCommand: new Date(0) }
+    const milliSecondForHour = 1000 * 60 * 60
+    const shouldResponse = orderList.lastCommand.valueOf() + milliSecondForHour <= this.now.valueOf()
+    if (shouldResponse) {
+      orderList.lastCommand = this.now
+    } else {
+      this._di.debug(`Duplicated check order, last request : ${orderList.formattedString} / now : ${this.now.formattedString}`)
+      console.log(orderList.lastCommand.valueOf(), milliSecondForHour, this.now.valueOf())
+    }
+    return shouldResponse
+  }
+
   sendMessageToUser (user, msg) {
+    this._di.debug(`[${user.name}] : ${msg}`)
     return this._bot.postMessageToUser(user.name, msg, this._botParam, null)
   }
 

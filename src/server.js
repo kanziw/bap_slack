@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import SlackBots from 'slackbots'
+import debug from 'debug'
 import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
@@ -11,7 +12,9 @@ async function initServer (Config) {
   const mongo = await MongoClient.connect(mongoUrl)
 
   const di = {
+    debug: debug('bap'),
     getMongoCol: colName => mongo.collection(colName),
+    orderList: {}
   }
 
   // Load modules

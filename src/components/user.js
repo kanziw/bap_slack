@@ -1,3 +1,5 @@
+const makeMarkedName = uid => `<@${uid}>`
+
 export default class User {
   /**
    * @param data {UserInfo}
@@ -11,7 +13,15 @@ export default class User {
   }
 
   get markedName () {
-    return `<@${this.id}>`
+    return makeMarkedName(this.id)
+  }
+
+  get name () {
+    return this._d.name
+  }
+
+  static convertIdToMarkedName (uid) {
+    return makeMarkedName(uid)
   }
 }
 
