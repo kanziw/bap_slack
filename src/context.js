@@ -1,21 +1,34 @@
+import User from './components/user'
+import Now from './components/now'
+import Menu from './components/menu'
+
 export default class Context {
   /**
    * @param bot {Bot}
    * @param data {object}
+   * @param di {object}
    * @param [options] {object}
    */
-  constructor (bot, data, options = {}) {
+  constructor (bot, data, di, options = {}) {
     this._bot = bot
     this._d = data
+    this._di = di
     this._botParam = options.botParam || { as_user: true }
 
     this.command = null
     this.args = null
     this._members = null
+
+    this.now = new Now()
   }
 
   get tid () {
     return this._d.team
+  }
+
+  get collectionName () {
+    this.ensure(this.tid)
+    return this.tid
   }
 
   get uid () {
@@ -60,10 +73,10 @@ export default class Context {
   }
 
   /**
-   * @param uid {string}
-   * @returns {Promise.<UserInfo>}
+   * @param [uid] {string}
+   * @returns {Promise.<User>}
    */
-  async getUserInfo (uid) {
+  async getUser (uid = this.uid) {
     this.ensure(uid)
     let members = this._members
     if (!members) {
@@ -71,20 +84,50 @@ export default class Context {
     }
     const user = members.find(member => member.id === this.uid)
     this.ensure(user)
-    return user
+    return new User(user)
+  }
+
+  /**
+   * {user.id} 가 최근 12시간 이내에 주문한 {mealKey} Menu Data 조회
+   * @param [uid] {string}
+   * @returns {Promise.<?Menu>}
+   */
+  async getRecentlyMenuOfUser (uid = this.uid) {
+    this.ensure(uid)
+    const col = this._di.getMongoCol(this.collectionName)
+    const q = { uid, mealKey: this.mealKey, createdAt: { $gt: this.now.getDateBeforeHoursOf(12) } }
+    const [ yesterdayData ] = await col.find(q).sort({ createdAt: -1 }).limit(1).toArray()
+    return yesterdayData ? new Menu(yesterdayData) : null
+  }
+
+  get mealKey () {
+    return this.now.mealKey
+  }
+
+  get mealString () {
+    return this.now.mealString
   }
 
   sendMessageToUser (user, msg) {
-    return this._bot.postMessageToUser(user.name, msg, this._botParam)
+    return this._bot.postMessageToUser(user.name, msg, this._botParam, null)
   }
 
   ensure (condition, errorCode) {
     if (!condition) {
-      this.assert(errorCode)
+      this.assert(errorCode).then()
     }
   }
 
-  assert (errorCode) {
+  async assert (errorCode) {
+    if (this.uid) {
+      try {
+        const user = await this.getUser()
+        await this.sendMessageToUser(user, `Failed..`)
+      } catch (ex) {
+        console.error('Unknown error detected...')
+        console.error(ex)
+      }
+    }
     const err = new Error()
     err.errorCode = errorCode
     err.handled = true
@@ -158,40 +201,3 @@ export default class Context {
   ts: '1488956218.000005' }
  */
 
-//
-// User info
-//
-/**
- * @typedef {object} UserInfo
- * @property {string} id
- * @property {string} team_id
- * @property {string} name
- * @property {boolean} deleted
- * @property {?string} status
- * @property {string} color
- * @property {string} real_name
- * @property {string} tz
- * @property {string} tz_label
- * @property {number} tz_offset
- * @property {object} profile
- * @property {string} profile.first_name
- * @property {string} profile.last_name
- * @property {string} profile.avatar_hash
- * @property {string} profile.real_name
- * @property {string} profile.real_name_normalized
- * @property {string} profile.email
- * @property {string} profile.image_24
- * @property {string} profile.image_32
- * @property {string} profile.image_48
- * @property {string} profile.image_72
- * @property {string} profile.image_192
- * @property {string} profile.image_512
- * @property {?string} profile.fields: null },
- * @property {boolean} is_admin
- * @property {boolean} is_owner
- * @property {boolean} is_primary_owner
- * @property {boolean} is_restricted
- * @property {boolean} is_ultra_restricted
- * @property {boolean} is_bot
- * @property {string} presence
- */

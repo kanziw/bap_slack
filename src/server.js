@@ -3,7 +3,6 @@ import fs from 'fs'
 import SlackBots from 'slackbots'
 import { MongoClient } from 'mongodb'
 import Context from './context'
-
 import _Config from './config'
 
 async function initServer (Config) {
@@ -33,15 +32,20 @@ async function initServer (Config) {
   const bot = new SlackBots({ token: Config.SLACK_API_TOKEN, name: Config.BOT_NAME })
   const botParam = { as_user: 'true' }
   bot.on('start', function () {
-    console.log('START BOT!')
+    console.log(`Bot [${bot.self.name}] is ready!`)
   })
 
   bot.on('message', async function (data) {
-    const context = new Context(bot, data, { botParam })
+    const context = new Context(bot, data, di, { botParam })
     if (context.isMessage() && context.isBotCommand()) {
       const fn = commands[ context.command ]
       if (fn) {
-        await fn(context).catch(ex => console.error('Error raised!', ex))
+        try {
+          await fn(context)
+        } catch (ex) {
+          console.error('Error raised!')
+          console.error(ex)
+        }
       }
     }
   })
