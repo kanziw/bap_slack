@@ -9,7 +9,6 @@ export default {
   MONGO_DBNAME: 'bap',
 
   // SLACK
-  SLACK_WEBHOOK_URL: env.SLACK_WEBHOOK_URL,
   SLACK_API_TOKEN: env.SLACK_API_TOKEN,
-  SLACK_BOT_TOKEN: env.SLACK_BOT_TOKEN,
+  BOT_NAME: 'bob',
 }

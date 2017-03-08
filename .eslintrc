@@ -8,6 +8,7 @@
       "error",
       "always-multiline"
     ],
-    "no-unused-vars": "warn"
+    "no-unused-vars": "warn",
+    "no-return-assign": "off"
   }
 }
