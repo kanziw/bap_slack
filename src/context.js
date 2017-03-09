@@ -1,5 +1,6 @@
 /* global debug */
 import User from './components/user'
+import Channel from './components/channel'
 import Now from './components/now'
 import Menu from './components/menu'
 
@@ -19,8 +20,13 @@ export default class Context {
     this.command = null
     this.args = null
     this._members = null
+    this._channels = null
 
     this.now = new Now()
+  }
+
+  get cid () {
+    return this._d.channel
   }
 
   get tid () {
@@ -73,17 +79,20 @@ export default class Context {
     return !!this.uid
   }
 
+  isMessageFromChannel () {
+    return !!this.cid
+  }
+
   /**
    * @param [uid] {string}
    * @returns {Promise.<User>}
    */
   async getUser (uid = this.uid) {
     this.ensure(uid)
-    let members = this._members
-    if (!members) {
-      members = await this._bot.getUsers().then(r => r.members)
+    if (!this._members) {
+      this._members = await this._bot.getUsers().then(r => r.members)
     }
-    const user = members.find(member => member.id === this.uid)
+    const user = this._members.find(member => member.id === this.uid)
     this.ensure(user)
     return new User(user)
   }
@@ -144,9 +153,50 @@ export default class Context {
     return shouldResponse
   }
 
+  async sendMessage (msg, options = {}) {
+    let success = false
+    if (this.isMessageFromChannel()) {
+      const channel = await this.getChannel()
+      if (channel) {
+        await this.sendMessageToChannel(channel, msg)
+        success = true
+      }
+    }
+
+    if (!success && this.isMessageFromUser()) {
+      let user = options.user
+      if (!user) {
+        user = await this.getUser()
+      }
+      await this.sendMessageToUser(user, msg)
+    }
+  }
+
   sendMessageToUser (user, msg) {
     this._di.debug(`[${user.name}] : ${msg}`)
     return this._bot.postMessageToUser(user.name, msg, this._botParam, null)
+  }
+
+  /**
+   * @param [cid] {string}
+   * @returns {Promise.<?Channel>}
+   */
+  async getChannel (cid = this.cid) {
+    this.ensure(cid)
+    if (!this._channels) {
+      this._channels = await this._bot.getChannels().then(r => r.channels)
+    }
+    const channel = this._channels.find(channel => channel.id === this.cid)
+    return channel ? new Channel(channel) : null
+  }
+
+  /**
+   * @param channel {Channel}
+   * @param msg {string}
+   */
+  sendMessageToChannel (channel, msg) {
+    this._di.debug(`[${channel.name}] : ${msg}`)
+    return this._bot.postMessageToChannel(channel.name, msg, this._botParam, null)
   }
 
   ensure (condition, errorCode) {
