@@ -13,11 +13,10 @@ export async function fn (context) {
       const orderList = context.getOrderList()
       const keys = Object.keys(orderList).filter(key => ![ 'lastCommand', 'createdAt' ].includes(key))
       if (keys.length > 0) {
-        const msg = keys
-            .map(uid => `${User.convertIdToMarkedName(uid)} 님은 "${orderList[ uid ]}"`)
-            .join(', ')
-          + ' 을/를 선택했어요.'
-        await context.sendMessageToUser(user, msg)
+        const msg = keys.map(uid => `${User.convertIdToMarkedName(uid)} : "${orderList[ uid ]}"`).join('\n')
+        await context.sendMessage(msg, { user })
+      } else {
+        await context.sendMessage('주문 내역이 없습니다.', { user })
       }
     }
   }
