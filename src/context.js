@@ -137,18 +137,42 @@ export default class Context {
   }
 
   getOrderList () {
-    return this._di.orderList[ this.orderListKey ] || {}
+    return this._di.orderList[ this.orderListKey ] || { lastCommand: Now.initDate() }
+  }
+
+  updateOrderListCommandHistory () {
+    this._di.orderList[ this.orderListKey ] = Object.assign({}, this.getOrderList(), { lastCommand: this.now })
   }
 
   shouldResponseCheckOrder () {
-    const orderList = this._di.orderList[ this.orderListKey ] || { lastCommand: new Date(0) }
+    const { lastCommandList } = this._di
+    this.ensure(this.tid, this.uid, lastCommandList)
+    const key = `checkOrder_${this.tid}`
+
+    const orderList = this.getOrderList()
     const milliSecondForHour = 1000 * 60 * 60
     const shouldResponse = orderList.lastCommand.valueOf() + milliSecondForHour <= this.now.valueOf()
     if (shouldResponse) {
-      orderList.lastCommand = this.now
+      this.updateOrderListCommandHistory()
     } else {
-      this._di.debug(`Duplicated check order, last request : ${orderList.formattedString} / now : ${this.now.formattedString}`)
-      console.log(orderList.lastCommand.valueOf(), milliSecondForHour, this.now.valueOf())
+      this._di.debug(`Duplicated check order, last request : ${orderList.lastCommand.formattedString} / now : ${this.now.formattedString}`)
+    }
+    return shouldResponse
+  }
+
+  shouldResponseYesterday () {
+    const { lastCommandList } = this._di
+    this.ensure(this.tid, this.uid, lastCommandList)
+    const key = `yesterday_${this.tid}_${this.uid}`
+    if (!lastCommandList[ key ]) {
+      lastCommandList[ key ] = { uid: this.uid, lastCommand: Now.initDate() }
+    }
+    const milliSecondForHour = 1000 * 60 * 60
+    const shouldResponse = lastCommandList[ key ].lastCommand.valueOf() + milliSecondForHour <= this.now.valueOf()
+    if (shouldResponse) {
+      lastCommandList[ key ].lastCommand = this.now
+    } else {
+      this._di.debug(`Duplicated yesterday command, last request : ${lastCommandList[ key ].lastCommand.formattedString} / now : ${this.now.formattedString}`)
     }
     return shouldResponse
   }

@@ -7,9 +7,10 @@ export default class Now {
   /**
    * @param [options] {object}
    * @config timezone {string}
+   * @config timestamp {number}
    */
   constructor (options = {}) {
-    this.now = new Date().setTimezone(options.timezone || Timezone)
+    this.now = (options.hasOwnProperty('timestamp') ? new Date(options.timestamp) : new Date()).setTimezone(options.timezone || Timezone)
     this.formattedString = moment(this.now).format('YYYY-MM-DD HH:mm:ss')
     const [ dateString, timeString ] = this.formattedString.split(' ')
     this._dateString = dateString
@@ -67,5 +68,8 @@ export default class Now {
   valueOf () {
     return this.now.valueOf()
   }
-}
 
+  static initDate () {
+    return new Now({ timestamp: 0 })
+  }
+}

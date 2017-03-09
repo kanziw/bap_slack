@@ -16,6 +16,7 @@ export async function fn (context) {
         const msg = keys.map(uid => `${User.convertIdToMarkedName(uid)} : "${orderList[ uid ]}"`).join('\n')
         await context.sendMessage(msg, { user })
       } else {
+        context.updateOrderListCommandHistory()
         await context.sendMessage('주문 내역이 없습니다.', { user })
       }
     }

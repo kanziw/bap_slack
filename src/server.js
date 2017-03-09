@@ -14,6 +14,7 @@ async function initServer (Config) {
   const di = {
     debug: debug('bap'),
     getMongoCol: colName => mongo.collection(colName),
+    lastCommandList: {},
     orderList: {},
   }
 
