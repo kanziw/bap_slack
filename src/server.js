@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
 
-async function initServer (Config) {
+export default async function initServer (Config) {
   // Mongo DB
   const mongoUrl = `mongodb://${Config.MONGO_HOST}:${Config.MONGO_PORT}/${Config.MONGO_DBNAME}`
   const mongo = await MongoClient.connect(mongoUrl)
@@ -33,7 +33,7 @@ async function initServer (Config) {
   })
 
   // Slack bot
-  const bot = new SlackBots({ token: Config.SLACK_API_TOKEN, name: Config.BOT_NAME })
+  const bot = Config.Bot || new SlackBots({ token: Config.SLACK_API_TOKEN, name: Config.BOT_NAME })
   const botParam = { as_user: 'true' }
   bot.on('start', function () {
     console.log(`Bot [${bot.self.name}] is ready!`)
@@ -58,6 +58,8 @@ async function initServer (Config) {
     console.error('Error detected...')
     args.forEach(arg => console.error(arg))
   })
+
+  return { di }
 }
 
 if (require.main === module) {
