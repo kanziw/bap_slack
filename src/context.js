@@ -63,11 +63,18 @@ export default class Context {
 
   isCalledBot () {
     if (this._d.text) {
-      const split = this._d.text.split(' ')
-      const isTrue = !!split.find(v => v === `<@${this.botId}>`)
+      const split = this._d.text.split(/[\s,]+/)
+      const isTrue = split[ 0 ] === `<@${this.botId}>`
       if (isTrue) {
         this.command = split[ 1 ]
-        this.args = split.slice(2)
+        const args = split.slice(2)
+
+        // ignore second commands
+        const idx = args.findIndex(arg => arg === `<@${this.botId}>`)
+        if (idx > -1) {
+          args.splice(idx)
+        }
+        this.args = args
       }
 
       return isTrue
@@ -120,6 +127,7 @@ export default class Context {
 
   /**
    * 들어온 주문을 저장한다.
+   * @returns {boolean}
    */
   saveMenu () {
     this.ensure(this.uid && this.tid)
@@ -128,8 +136,13 @@ export default class Context {
     if (!orderList[ key ]) {
       orderList[ key ] = { createdAt: this.now }
     }
-    orderList[ key ][ this.uid ] = this.args.join(' ')
-    orderList[ key ].lastCommand = new Date(0)
+    const menu = this.args.join(' ')
+    if (menu) {
+      orderList[ key ][ this.uid ] = menu
+      orderList[ key ].lastCommand = Now.initDate()
+      return true
+    }
+    return false
   }
 
   get orderListKey () {
