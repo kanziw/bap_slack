@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
 
-export default async function initServer (Config) {
+async function initServer (Config) {
   // Mongo DB
   const mongoUrl = `mongodb://${Config.MONGO_HOST}:${Config.MONGO_PORT}/${Config.MONGO_DBNAME}`
   const mongo = await MongoClient.connect(mongoUrl)
@@ -61,6 +61,8 @@ export default async function initServer (Config) {
 
   return { di }
 }
+
+export default initServer
 
 if (require.main === module) {
   initServer(_Config).then(() => {
