@@ -117,8 +117,20 @@ export default class Context {
     return yesterdayData ? new Menu(yesterdayData) : null
   }
 
+  async saveMenuOfUser (uid, menu) {
+    this.ensure(uid && menu)
+    const col = this._di.getMongoCol(this.collectionName)
+    const q = { uid, mealKey: this.mealKey, dateKey: this.dateKey }
+    this._di.debug(`Saving menu, [${uid}] : ${menu}`)
+    return col.updateOne(q, Object.assign({ menu, createdAt: this.now.getDate() }, q), { upsert: true })
+  }
+
   get mealKey () {
     return this.now.mealKey
+  }
+
+  get dateKey () {
+    return this.now.dateKey
   }
 
   get mealString () {
@@ -153,6 +165,10 @@ export default class Context {
     return this._di.orderList[ this.orderListKey ] || { lastCommand: Now.initDate() }
   }
 
+  removeOrderList () {
+    delete this._di.orderList[ this.orderListKey ]
+  }
+
   updateOrderListCommandHistory () {
     this._di.orderList[ this.orderListKey ] = Object.assign({}, this.getOrderList(), { lastCommand: this.now })
   }
@@ -160,7 +176,6 @@ export default class Context {
   shouldResponseCheckOrder () {
     const { lastCommandList } = this._di
     this.ensure(this.tid, this.uid, lastCommandList)
-    const key = `checkOrder_${this.tid}`
 
     const orderList = this.getOrderList()
     const milliSecondForHour = 1000 * 60 * 60

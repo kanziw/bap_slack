@@ -69,6 +69,10 @@ export default class Now {
     return this.now.valueOf()
   }
 
+  getDate () {
+    return this.now
+  }
+
   static initDate () {
     return new Now({ timestamp: 0 })
   }
