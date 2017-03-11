@@ -5,6 +5,9 @@ import debug from 'debug'
 import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
+import moment from 'moment'
+import now from './components/now'
+import { Timezone, MealKey, LunchHHmm, DinnerHHmm } from './const'
 
 async function initServer (Config) {
   // Mongo DB
@@ -37,6 +40,7 @@ async function initServer (Config) {
   const botParam = { as_user: 'true' }
   bot.on('start', function () {
     console.log(`Bot [${bot.self.name}] is ready!`)
+    setInterval(notiOnTime, 1000)
   })
 
   bot.on('message', async function (data) {
@@ -58,6 +62,17 @@ async function initServer (Config) {
     console.error('Error detected...')
     args.forEach(arg => console.error(arg))
   })
+
+  function notiOnTime() {
+    console.log(LunchHHmm)
+    const [LunchH, LunchM, LunchS] = LunchHHmm.split(':')
+    if ( moment().hours() == LunchH && moment().minutes() == LunchM && moment().seconds() == LunchS ) {
+      console.log("띵동")
+    }
+    const now = moment().format("HH:mm:ss")
+    console.log("current time is " + now)
+
+  }
 
   return { di }
 }
