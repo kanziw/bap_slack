@@ -1,6 +1,6 @@
 import moment from 'moment'
 import time from 'time'
-import { Timezone, MealKey, LunchHHmm, DinnerHHmm } from '../const'
+import { Timezone, MealKey, HHmm } from '../const'
 time(Date)
 
 export default class Now {
@@ -27,10 +27,9 @@ export default class Now {
 
   get timeKey () {
     if (!this._timeKey) {
-      const timeKey = this._timeString.split(':').slice(0, 2).join(':')
-      this._timeKey = timeKey
-      return timeKey
+      this._timeKey = this._timeString.split(':').slice(0, 2).join(':')
     }
+    return this._timeKey
   }
 
   get dateKey () {
@@ -39,7 +38,15 @@ export default class Now {
 
   get mealKey () {
     if (!this._mealKey) {
-      this._mealKey = this.isMorning() ? MealKey.Morning : (this.isLunch() ? MealKey.Lunch : MealKey.Dinner)
+      if (this.isMorning()) {
+        this._mealKey = MealKey.Morning
+      } else if (this.isLunch()) {
+        this._mealKey = MealKey.Lunch
+      } else if (this.isDinner()) {
+        this._mealKey = MealKey.Dinner
+      } else {
+        this._mealKey = MealKey.LateNightMeal
+      }
     }
     return this._mealKey
   }
@@ -60,25 +67,29 @@ export default class Now {
    * @returns {boolean}
    */
   isMorning () {
-    return this.timeKey < LunchHHmm
+    return this.timeKey >= HHmm.Morning && this.timeKey < HHmm.Lunch
   }
 
   /**
    * @returns {boolean}
    */
   isLunch () {
-    return !this.isMorning() && this.timeKey < DinnerHHmm
+    return this.timeKey >= HHmm.Lunch && this.timeKey < HHmm.Dinner
   }
 
   /**
    * @returns {boolean}
    */
   isDinner () {
-    return !this.isLunch()
+    return this.timeKey >= HHmm.Dinner && this.timeKey < HHmm.LateNightMeal
   }
 
   valueOf () {
     return this.now.valueOf()
+  }
+
+  getDate () {
+    return this.now
   }
 
   static initDate () {

@@ -7,7 +7,7 @@ import Context from './context'
 import _Config from './config'
 import moment from 'moment'
 import now from './components/now'
-import { Timezone, MealKey, LunchHHmm, DinnerHHmm, ChannelNameForNoti } from './const'
+import { Timezone, MealKey, HHmm } from './const'
 
 async function initServer (Config) {
   // Mongo DB
@@ -64,7 +64,7 @@ async function initServer (Config) {
   })
 
   function notiOnTime() {
-    const [LunchH, LunchM, LunchS] = LunchHHmm.split(':')
+    const [LunchH, LunchM, LunchS] = HHmm.Lunch.split(':')
     if ( moment().hours() == LunchH && moment().minutes() == LunchM && moment().seconds() == LunchS ) {
       const channelName = ChannelNameForNoti
       bot.postMessageToChannel(channelName, '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!')

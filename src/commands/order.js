@@ -6,6 +6,9 @@ export const name = '주문'
 export async function fn (context) {
   context.where(name)
   if (context.isMessageFromUser()) {
-    context.saveMenu()
+    if (!context.saveMenu()) {
+      const user = await context.getUser()
+      await context.sendMessage(`주문이 저장되지 않았어요, ${user.markedName}`, { user })
+    }
   }
 }
