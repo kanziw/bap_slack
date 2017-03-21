@@ -5,6 +5,9 @@ import debug from 'debug'
 import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
+import moment from 'moment'
+import now from './components/now'
+import { Timezone, MealKey, LunchHHmmss, ChannelNameForNoti } from './const'
 
 async function initServer (Config) {
   // Mongo DB
@@ -37,6 +40,7 @@ async function initServer (Config) {
   const botParam = { as_user: 'true' }
   bot.on('start', function () {
     console.log(`Bot [${bot.self.name}] is ready!`)
+    setInterval(notiOnTime, 1000)
   })
 
   bot.on('message', async function (data) {
@@ -58,6 +62,15 @@ async function initServer (Config) {
     console.error('Error detected...')
     args.forEach(arg => console.error(arg))
   })
+
+  function notiOnTime() {
+    const [LunchH, LunchM, LunchS] = LunchHHmmss.split(':')
+    if ( moment().hours() == LunchH && moment().minutes() == LunchM && moment().seconds() == LunchS ) {
+      const channelName = ChannelNameForNoti
+      bot.postMessageToChannel(channelName, '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!')
+    }
+    const now = moment().format("HH:mm:ss")
+  }
 
   return { di }
 }
