@@ -6,9 +6,9 @@ export const ChannelNameForNoti = 'bap'
 
 export const HHmm = {
   Morning: '06:00',       // Morning's starting time
-  Lunch: '12:20',         // Lunch's starting time
-  Dinner: '18:20',        // Dinner's starting time
-  LateNightMeal: '21:00'  // LateNightMeal's starting time
+  Lunch: '11:00',         // Lunch's starting time
+  Dinner: '17:00',        // Dinner's starting time
+  LateNightMeal: '21:00', // LateNightMeal's starting time
 }
 
 export const MealKey = {
