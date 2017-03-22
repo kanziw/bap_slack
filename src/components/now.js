@@ -51,16 +51,8 @@ export default class Now {
     return this._mealKey
   }
 
-  get hours() {
-    return moment(this.now).format('HH')
-  }
-
-  get minutes() {
-    return moment(this.now).format('mm')
-  }
-
-  get seconds() {
-    return moment(this.now).format('ss')
+  get HHmmss () {
+    return this.formattedString.split(' ')[ 1 ]
   }
 
   /**

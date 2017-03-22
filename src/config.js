@@ -11,4 +11,8 @@ export default {
   // SLACK
   SLACK_API_TOKEN: env.SLACK_API_TOKEN,
   BOT_NAME: 'bob',
+
+  // ENABLE List
+  ENABLE_NOTI_LUNCH: !!parseInt(env.ENABLE_NOTI_LUNCH, 10),
+  ENABLE_NOTI_DINNER: !!parseInt(env.ENABLE_NOTI_DINNER, 10),
 }

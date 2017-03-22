@@ -5,9 +5,8 @@ import debug from 'debug'
 import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
-import moment from 'moment'
-import now from './components/now'
-import { Timezone, MealKey, LunchHHmmss, ChannelNameForNoti } from './const'
+import Now from './components/now'
+import { LunchHHmmss, DinnerHHmmss, ChannelNameForNoti } from './const'
 
 async function initServer (Config) {
   // Mongo DB
@@ -63,13 +62,18 @@ async function initServer (Config) {
     args.forEach(arg => console.error(arg))
   })
 
-  function notiOnTime() {
-    const [LunchH, LunchM, LunchS] = LunchHHmmss.split(':')
-    if ( moment().hours() == LunchH && moment().minutes() == LunchM && moment().seconds() == LunchS ) {
-      const channelName = ChannelNameForNoti
-      bot.postMessageToChannel(channelName, '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!')
+  function notiOnTime () {
+    const now = new Now()
+    if (Config.ENABLE_NOTI_LUNCH && now.HHmmss === LunchHHmmss) {
+      const lunchMsg = '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!'
+      bot.postMessageToChannel(ChannelNameForNoti, lunchMsg)
+      debug(`__#${ChannelNameForNoti} : ${lunchMsg}`)
     }
-    const now = moment().format("HH:mm:ss")
+    if (Config.ENABLE_NOTI_DINNER && now.HHmmss === DinnerHHmmss) {
+      const dinnerMsg = '야호!! 곧 저녁시간입니다!! 메뉴를 선택해주세요!!'
+      bot.postMessageToChannel(ChannelNameForNoti, dinnerMsg)
+      debug(`__#${ChannelNameForNoti} : ${dinnerMsg}`)
+    }
   }
 
   return { di }

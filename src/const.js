@@ -1,6 +1,6 @@
 export const Timezone = 'Asia/Seoul'
 
-export const LunchHHmmss = '23:10:20'    // Lunch's starting time
+export const LunchHHmmss = '12:20:00'    // Lunch's starting time
 export const DinnerHHmmss = '18:20:00'   // Dinner's starting time
 export const ChannelNameForNoti = 'bap'
 
