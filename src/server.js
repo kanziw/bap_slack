@@ -64,10 +64,12 @@ async function initServer (Config) {
 
   function notiOnTime () {
     const now = new Now()
-    if (Config.ENABLE_NOTI_LUNCH && now.HHmmss === LunchHHmmss) {
-      const lunchMsg = '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!'
-      bot.postMessageToChannel(ChannelNameForNoti, lunchMsg)
-      debug(`__#${ChannelNameForNoti} : ${lunchMsg}`)
+    if (moment().day() > 0 && moment().day()  <= 5) {
+      if (Config.ENABLE_NOTI_LUNCH && now.HHmmss === LunchHHmmss) {
+        const lunchMsg = '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!'
+        bot.postMessageToChannel(ChannelNameForNoti, lunchMsg)
+        debug(`__#${ChannelNameForNoti} : ${lunchMsg}`)
+      }
     }
     if (Config.ENABLE_NOTI_DINNER && now.HHmmss === DinnerHHmmss) {
       const dinnerMsg = '야호!! 곧 저녁시간입니다!! 메뉴를 선택해주세요!!'
