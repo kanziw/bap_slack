@@ -104,6 +104,6 @@ export default class Now {
    * @return {Now}
    */
   static initDate () {
-    return new Now({ timestamp: 0 })
+    return new Now({ gmt: '+0000', timestamp: 0 })
   }
 }
