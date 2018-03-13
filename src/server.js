@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb'
 import Context from './context'
 import _Config from './config'
 import Now from './components/now'
-import { LunchHHmmss, DinnerHHmmss, ChannelNameForNoti } from './const'
+import { ChannelNameForNoti, DinnerHHmmss, LunchHHmmss } from './const'
 
 async function initServer (Config) {
   // Mongo DB
@@ -14,7 +14,8 @@ async function initServer (Config) {
   const mongo = await MongoClient.connect(mongoUrl)
 
   const di = {
-    debug: debug('bap'),
+    debug: debug('bap:live'),
+    debugDev: debug('bap:dev'),
     getMongoCol: colName => mongo.collection(colName),
     lastCommandList: {},
     orderList: {},
@@ -43,6 +44,7 @@ async function initServer (Config) {
   })
 
   bot.on('message', async function (data) {
+    di.debugDev(`> data observed : ${JSON.stringify(data)}`)
     const context = new Context(bot, data, di, { botParam })
     if (context.isMessage() && context.isBotCommand()) {
       const fn = commands[ context.command ]
@@ -64,15 +66,16 @@ async function initServer (Config) {
 
   function notiOnTime () {
     const now = new Now()
+    di.debugDev(`> now's HHmmss : ${now.HHmmss}`)
     if (Config.ENABLE_NOTI_LUNCH && now.HHmmss === LunchHHmmss) {
       const lunchMsg = '야호!! 곧 점심시간입니다!! 메뉴를 선택해주세요!!'
       bot.postMessageToChannel(ChannelNameForNoti, lunchMsg)
-      debug(`__#${ChannelNameForNoti} : ${lunchMsg}`)
+      di.debug(`__#${ChannelNameForNoti} : ${lunchMsg}`)
     }
     if (Config.ENABLE_NOTI_DINNER && now.HHmmss === DinnerHHmmss) {
       const dinnerMsg = '야호!! 곧 저녁시간입니다!! 메뉴를 선택해주세요!!'
       bot.postMessageToChannel(ChannelNameForNoti, dinnerMsg)
-      debug(`__#${ChannelNameForNoti} : ${dinnerMsg}`)
+      di.debug(`__#${ChannelNameForNoti} : ${dinnerMsg}`)
     }
   }
 
