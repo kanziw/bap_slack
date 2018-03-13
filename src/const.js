@@ -1,4 +1,4 @@
-export const Timezone = 'Asia/Seoul'
+export const GMT = '+0900'
 
 export const LunchHHmmss = '12:00:00'    // Lunch's starting time
 export const DinnerHHmmss = '18:20:00'   // Dinner's starting time

@@ -1,24 +1,39 @@
 import moment from 'moment'
-import time from 'time'
-import { Timezone, MealKey, HHmm } from '../const'
-time(Date)
+import { GMT, HHmm, MealKey } from '../const'
+
+const machineTimezoneOffset = new Date().getTimezoneOffset()
+
+/**
+ * GMT 에 맞는 현재 시각 정보가 담긴 moment 객체를 반환한다.
+ * @param date {number|Date}
+ * @param [gmt='+0000'] {string}
+ * @returns {Moment}
+ */
+function getMomentWithGMT (date, gmt = '+0000') {
+  const addOrSubtract = gmt[ 0 ] === '+' ? 'add' : 'subtract'
+  const num = gmt.slice(1)
+  const [ h, m ] = [ num.slice(0, 2), num.slice(2) ].map(str => parseInt(str, 10))
+  return moment(date)
+    [ addOrSubtract ](h, 'hours')
+    [ addOrSubtract ](m, 'minutes')
+    .add(machineTimezoneOffset, 'minutes')
+}
 
 export default class Now {
   /**
-   * @param [options] {object}
-   * @config timezone {string}
-   * @config timestamp {number}
+   * @param gmt {string}
+   * @param timestamp {?number}
    */
-  constructor (options = {}) {
-    this.now = (options.hasOwnProperty('timestamp') ? new Date(options.timestamp) : new Date()).setTimezone(options.timezone || Timezone)
-    this.formattedString = moment(this.now).format('YYYY-MM-DD HH:mm:ss')
+  constructor ({ gmt = GMT, timestamp = null } = {}) {
+    this._moment = getMomentWithGMT(timestamp || Date.now(), gmt)
+    this.formattedString = this._moment.format('YYYY-MM-DD HH:mm:ss')
     const [ dateString, timeString ] = this.formattedString.split(' ')
     this._dateString = dateString
     this._timeString = timeString
   }
 
   getDateBeforeHoursOf (num) {
-    return moment(this.now).subtract(num, 'h').toDate()
+    return this._moment.subtract(num, 'h').toDate()
   }
 
   get mealString () {
@@ -77,13 +92,17 @@ export default class Now {
   }
 
   valueOf () {
-    return this.now.valueOf()
+    return this._moment.valueOf()
   }
 
   getDate () {
-    return this.now
+    return this._moment.toDate()
   }
 
+  /**
+   * 시간의 처음을 표현하고 싶을 때 사용한다. unix timestamp === 0 인 Now 객체를 반환한다.
+   * @return {Now}
+   */
   static initDate () {
     return new Now({ timestamp: 0 })
   }
